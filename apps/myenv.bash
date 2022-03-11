@@ -35,15 +35,15 @@ elif [ "$METROMS_MYHOST" == "met_ppi" ]; then
 	export METROMS_APPDIR=$HOME/sea/ROMS/metroms_apps
     else
 	export METROMS_BASEDIR=$HOME/metroms
-	export METROMS_TMPDIR=/lustre/storeB/users/$USER/metroms_run
+	export METROMS_TMPDIR=/lustre/storeA/users/$USER/metroms_run
 	export METROMS_BLDDIR=$METROMS_TMPDIR
 	export METROMS_APPDIR=$HOME/metroms_apps
     fi
 elif [ "$METROMS_MYHOST" == "elvis" ] || [ "$METROMS_MYHOST" == "nebula" ]; then
-    export METROMS_BASEDIR=$HOME/metroms
-    export METROMS_TMPDIR=/nobackup/forsk/$USER/metroms_run
+    export METROMS_BASEDIR=$HOME/metroms_coin
+    export METROMS_TMPDIR=/nobackup/forsk/$USER/metroms_run_coin
     export METROMS_BLDDIR=$METROMS_TMPDIR
-    export METROMS_APPDIR=$HOME/metroms_apps
+    export METROMS_APPDIR=$HOME/metroms_apps_coin
 elif [ "$METROMS_MYHOST" == "stratus" ]; then
     if [ "$USER" == "metno_op" ]; then
 	export METROMS_BASEDIR=$HOME/sea/ROMS/metroms
@@ -57,5 +57,16 @@ else
     echo "Undefined METROMS_MYHOST ", $METROMS_MYHOST
 fi
 
-
+mkdir -p $METROMS_TMPDIR
 export PYTHONPATH=$PYTHONPATH:$METROMS_BASEDIR/apps/common/python/
+
+#=====================================================================
+export MCT_DIR=$METROMS_TMPDIR/MCT
+
+export SITE=$METROMS_MYHOST
+export FORT=ifort
+if [ "$METROMS_MYHOST" == "metlocal" ]; then
+   export SITE=Ubuntu
+   export FORT=gfortran
+fi
+
