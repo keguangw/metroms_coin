@@ -32,12 +32,15 @@ elif [ "$METROMS_MYHOST" == "met_ppi" ]; then
     # module load netcdf/4.6.2-intel2018
     # module load openmpi/3.1.3-intel2018
     module load nco/4.7.9-intel2018
+  elif [ `lsb_release -sc` == 'bionic' ]; then
+    echo 'not available yet ...'
   else
     echo "Undefined linux distro for met_ppi"
   fi
 elif [ "$METROMS_MYHOST" == "nebula" ] || [ "$METROMS_MYHOST" == "stratus" ]; then
     module load buildenv-intel/2018a-eb
-    module load netCDF/4.3.2-HDF5-1.8.12-nsc1-intel-2018.u1-bare
+    #module load netCDF/4.3.2-HDF5-1.8.12-nsc1-intel-2018.u1-bare
+    module load netCDF/4.4.1.1-HDF5-1.8.19-nsc1-intel-2018a-eb
     module load NCO/4.6.3-nsc1
     #module load Python/2.7.14-anaconda-5.0.1-nsc1
     module load Python/2.7.15-anaconda-5.3.0-extras-nsc1
