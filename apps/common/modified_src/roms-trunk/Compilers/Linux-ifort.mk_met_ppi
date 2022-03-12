@@ -28,8 +28,8 @@
 # First the defaults
 #
                FC := ifort
-           FFLAGS := -mcmodel=large
-              CPP := /usr/bin/cpp
+           FFLAGS := -xHost #-mcmodel=large -Nmpi
+              CPP := cpp
          CPPFLAGS := -P -traditional
                CC := icc
               CXX := icc
@@ -51,12 +51,12 @@
 #
 
 ifdef USE_NETCDF4
-    NETCDF_INCDIR ?= /software/sse/manual/netcdf/4.3.2/include
-    NETCDF_LIBDIR ?= /software/sse/manual/netcdf/4.3.2/lib
-             LIBS := -L$(NETCDF_LIBDIR) -lnetcdff -lnetcdf
+        NC_CONFIG ?= nc-config
+    NETCDF_INCDIR ?= $(shell $(NC_CONFIG) --includedir)
+             LIBS := $(shell $(NC_CONFIG) --flibs)
 else
-    NETCDF_INCDIR ?= /software/sse/manual/netcdf/4.3.2/include
-    NETCDF_LIBDIR ?= /software/sse/manual/netcdf/4.3.2/lib
+    NETCDF_INCDIR ?= #/sw/sdev/Modules/netcdf/netcdf-4.1.3/include
+    NETCDF_LIBDIR ?= #/sw/sdev/Modules/netcdf/netcdf-4.1.3/lib
              LIBS := -L$(NETCDF_LIBDIR) -lnetcdff -lnetcdf
 endif
 
@@ -72,9 +72,9 @@ endif
 ifdef USE_MPI
          CPPFLAGS += -DMPI
  ifdef USE_MPIF90
-               FC := mpiifort
+               FC := mpif90
  else
-             LIBS += -lmpi #-lfmpi
+             LIBS += -lmpi #-lfmpi 
  endif
 endif
 
@@ -89,15 +89,14 @@ ifdef USE_DEBUG
            CFLAGS += -g
          CXXFLAGS += -g
 else
-           FFLAGS += -ip -O3 
-#           FFLAGS += -ip -O3 -g
+#          FFLAGS += -O3
            CFLAGS += -O3
          CXXFLAGS += -O3
 endif
 
 ifdef USE_MCT
-       MCT_INCDIR ?= $(MY_ROMS_SRC)/../MCT/include
-       MCT_LIBDIR ?= $(MY_ROMS_SRC)/../MCT/lib
+       MCT_INCDIR ?= $(MCT_DIR)/include
+       MCT_LIBDIR ?= $(MCT_DIR)/lib
            FFLAGS += -I$(MCT_INCDIR)
              LIBS += -L$(MCT_LIBDIR) -lmct -lmpeu
 endif
@@ -116,9 +115,6 @@ ifdef USE_ESMF
            FFLAGS += $(ESMF_F90COMPILEPATHS)
              LIBS += $(ESMF_F90LINKPATHS) -lesmf -lC
 endif
-
-#         LIBS += -L$(MY_ROMS_SRC)/../run/arctic-20km -lmap-sampler-pmpi -lmap-sampler -Wl,--eh-frame-hdr 
-#         LIBS += -Wl,-rpath=$(MY_ROMS_SRC)/../run/arctic-20km
 
 ifdef USE_CXX
              LIBS += -lstdc++

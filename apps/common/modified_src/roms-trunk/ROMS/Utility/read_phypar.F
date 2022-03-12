@@ -943,6 +943,14 @@
 # endif
               END DO
 #endif
+# ifdef COIN_SST
+            CASE ('assim_SST')
+              Npts=load_l(Nval, Cval, Ngrids, assim_SST)
+            CASE ('p_nudging')
+              Npts=load_l(Nval, Cval, Ngrids, p_nudging)
+            CASE ('SSTnudass')
+              Npts=load_r(Nval, Rval, Ngrids, SSTnudass)
+# endif
             CASE ('LnudgeM2CLM')
               Npts=load_l(Nval, Cval, Ngrids, LnudgeM2CLM)
 #ifdef SOLVE3D
@@ -4008,6 +4016,19 @@
           END DO
 # endif
 #endif
+# ifdef COIN_SST
+          IF (assim_SST(ng)) THEN
+             WRITE (out,170) assim_SST(ng), 'assim_SST',                &
+     &            'Turning on SST Nudging switch.'
+             IF (p_nudging(ng)) THEN
+                WRITE (out,170) p_nudging(ng), 'p_nudging',             &
+     &            'Turning on SST perfect Nudging switch.'
+             ELSE
+                WRITE (out,200) SSTnudass(ng), 'SSTnudass',             &
+     &            'SST Nudging assimilation time scale (days).'
+             ENDIF
+          END IF
+# endif
           IF (LnudgeM2CLM(ng)) THEN
             WRITE (out,170) LnudgeM2CLM(ng), 'LnudgeM2CLM',             &
      &          'Turning ON  nudging of 2D momentum climatology.'

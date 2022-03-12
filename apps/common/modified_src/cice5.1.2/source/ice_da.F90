@@ -4,6 +4,12 @@
 ! Perform data assimilate for sea ice state, using
 ! 1) Combined Optimal Interpolation and Nudging (COIN) scheme
 !
+! refernces: 
+!  Wang, K., J. Debernard, A. Sperrevik, P. Isachsen, T. Lavergne:     !
+!    A combined optimal interpolation and nudging scheme to assimilate !
+!    OSISAF sea ice concentration into ROMS, Annals of Glaciology,     !
+!    DOI: https://doi.org/10.3189/2013AoG62A138                        !
+! 
 ! authors: Keguang Wang, MET.no
 
       module ice_da
@@ -32,7 +38,7 @@
          da_sic ,       & ! perform da of sic if true
          da_sit ,       & ! perform da of sea ice thickess if true
          da_sno ,       & ! for snow depth if true
-         da_insert,     & ! direct insertion
+         da_insert,     & ! perfect nudging
          corr_bias        ! perform bias correction if true
 
      character (char_len), public :: &
@@ -354,7 +360,7 @@ subroutine da_coin    (nx_block,            ny_block,      &
                mod_err2 = mod_err**2 + aerr**2
 
                gain   = mod_err2 / (mod_err2 + puny + aerr**2)
-               if (da_insert) gain = c1
+               if (da_insert) gain = 0.9999_dbl_kind
 
                weight = c1 - (c1 - gain)**rda
                if (corr_bias) then
