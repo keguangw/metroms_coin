@@ -38,10 +38,12 @@
          da_sic ,       & ! perform da of sic if true
          da_sit ,       & ! perform da of sea ice thickess if true
          da_sno ,       & ! for snow depth if true
-         da_insert,     & ! perfect nudging
-         corr_bias        ! perform bias correction if true
+         da_insert        ! perfect nudging
 
-     character (char_len), public :: &
+      integer (kind=int_kind), public :: &
+         corr_bias        ! choose bias correction
+
+      character (char_len), public :: &
          da_method        ! data assimilation method
 
       character (char_len_long), public :: &
@@ -351,21 +353,28 @@ subroutine da_coin    (nx_block,            ny_block,      &
          do j = 1, ny_block
          do i = 1, nx_block
 
-            if ((aice_obs(i,j) >= c0) .and. aice_obs(i,j) <= 100) then
+            if ((aice_obs(i,j) >= c0) .and. (aice_obs(i,j) <= 100)) then
 
                aobs = aice_obs(i,j)     * p01
                aerr = aice_obs_err(i,j) * p01
 
-               mod_err  = aice(i,j) - aobs
+               mod_err  = abs(aice(i,j) - aobs)
                mod_err2 = mod_err**2 + aerr**2
 
                gain   = mod_err2 / (mod_err2 + puny + aerr**2)
                if (da_insert) gain = 0.9999_dbl_kind
 
                weight = c1 - (c1 - gain)**rda
-               if (corr_bias) then
-                  weight = weight * exp(-(aice(i,j)+aobs*2.5_dbl_kind))
-               endif
+               select case (corr_bias)
+                  case (0)	! default
+                     weight = weight * c1
+                  case (1) 	! Wang et al. (2013)
+                     weight = weight * exp(-(aice(i,j)+aobs)*2.5_dbl_kind)
+                  case (2) 	! Zhao et al. (2016)
+                     weight = weight * exp(-1.5_dbl_kind*(aobs**2 - aice(i,j)**2))
+                  case (3) 	! Fritzner et al. (2018)
+                     weight = weight * exp(mod_err - c1)
+               end select
             else
                weight = c0
             endif

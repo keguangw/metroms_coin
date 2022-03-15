@@ -338,7 +338,7 @@
       da_data_dir = '.'
       Tobs        = 86400.0_dbl_kind
       da_insert   = .false.
-      corr_bias   = .false.
+      corr_bias   = 0
 
       !-----------------------------------------------------------------
       ! read from input file
