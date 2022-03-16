@@ -374,6 +374,10 @@ subroutine da_coin    (nx_block,            ny_block,      &
                      weight = weight * exp(-1.5_dbl_kind*(aobs**2 - aice(i,j)**2))
                   case (3) 	! Fritzner et al. (2018)
                      weight = weight * exp(mod_err - c1)
+                  case (4) 
+                     weight = weight * exp(mod_err)
+                  case (5)
+                     weight = weight * 2.0_dbl_kind
                end select
             else
                weight = c0
