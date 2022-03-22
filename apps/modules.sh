@@ -44,6 +44,7 @@ elif [ "$METROMS_MYHOST" == "nebula" ] || [ "$METROMS_MYHOST" == "stratus" ]; th
     module load NCO/4.6.3-nsc1
     #module load Python/2.7.14-anaconda-5.0.1-nsc1
     module load Python/2.7.15-anaconda-5.3.0-extras-nsc1
+    export PATH=$HOME/.local/bin:$PATH
 else
     echo "Undefined METROMS_MYHOST ", $METROMS_MYHOST
 fi
