@@ -19,7 +19,7 @@
                    Tsmelt, Tffresh, rhoi, cp_ice, cp_ocn, Lfresh, &
                    secday, field_loc_center, field_type_scalar
       use ice_blocks, only: nx_block, ny_block
-      use ice_domain_size, only: ncat, nilyr, max_blocks, max_ntrcr
+      use ice_domain_size, only: ncat, nilyr, nslyr, max_blocks, max_ntrcr
       use ice_communicate, only: my_task, master_task
       use ice_fileunits, only: nu_diag
       use ice_grid, only: tmask
@@ -270,6 +270,7 @@ subroutine da_coin    (nx_block,            ny_block,      &
                            nt_fbri, tr_brine
       use ice_therm_mushy, only: enthalpy_mush
       use ice_therm_shared, only: ktherm
+      use ice_itd, only: hin_max
 
       integer (kind=int_kind), intent(in) :: &
          nx_block, ny_block, & ! block dimensions
@@ -338,8 +339,9 @@ subroutine da_coin    (nx_block,            ny_block,      &
          radd            ! incremental ratio
 
       real (kind=dbl_kind) :: &
-         slope,        & !
-         Ti              !
+         slope       , & !
+         Ti          , & !
+         hbar		 ! estimated sea ice thickness when observed new ice
 
       !-----------------------------------------------------------------
       ! assimilate sic on grid
@@ -353,6 +355,7 @@ subroutine da_coin    (nx_block,            ny_block,      &
          do j = 1, ny_block
          do i = 1, nx_block
 
+            aobs = c0
             if ((aice_obs(i,j) >= c0) .and. (aice_obs(i,j) <= 100)) then
 
                aobs = aice_obs(i,j)     * p01
@@ -391,38 +394,37 @@ subroutine da_coin    (nx_block,            ny_block,      &
                   vicen(i,j,n) = vicen(i,j,n) * radd
                   vsnon(i,j,n) = vsnon(i,j,n) * radd
                enddo
-!            else
-!               if (weight > c0) then
-!                  radd = weight * (aobs - aice(i,j))
-!                  aicen(i,j,1) = aicen(i,j,1) + radd 
-!                  vicen(i,j,1) = vicen(i,j,1) + radd 
-!
-!                  do n=1,ncat
-!                     trcrn(i,j,nt_Tsfc,n) = min(Tsmelt, Tair(i,j)-Tffresh) 
-!                     if (tr_brine) trcrn(i,j,nt_fbri,n) = c1
-!
-!                     do k=1,nilyr
-!                        ! assume linear temp profile and compute enthalpy
-!                        slope = Tf(i,j) - trcrn(i,j,nt_Tsfc,n)
-!                        Ti = trcrn(i,j,nt_Tsfc,n) &
-!                           + slope*(real(k,kind=dbl_kind)-p5) &
-!                           / real(nilyr,kind=dbl_kind)
-!
-!                        if (ktherm == 2) then
-!                           ! enthalpy
-!                           trcrn(i,j,nt_qice+k-1,n) = &
-!                              enthalpy_mush(Ti, c5)
-!                        else
-!                           trcrn(i,j,nt_qice+k-1,n) = &
-!                             - (rhoi * (cp_ice*(Tmltz(i,j,k)-Ti) &
-!                             + Lfresh*(c1-Tmltz(i,j,k)/Ti) &
-!                             - cp_ocn*Tmltz(i,j,k)))
-!                        endif
-!                      ! trcrn(i,j,nt_sice+k-1,n) = salinz(i,j,k)
-!                       trcrn(i,j,nt_sice+k-1,n) = c5
-!                     enddo
-!                  enddo
-!               endif
+            else
+               if ((weight > c0) .and. (aobs > p1)) then
+                  hbar = p5
+                  do n = 1, ncat
+                     if (hbar > hin_max(n-1) .and. hbar < hin_max(n)) then
+                        aicen(i,j,n) = aobs
+                        vicen(i,j,n) = aobs * hbar
+                        vsnon(i,j,n) = vicen(i,j,n) * p1
+                     endif
+                  enddo
+
+                  do n=1,ncat
+                     trcrn(i,j,nt_Tsfc,n) = min(Tsmelt, Tair(i,j)-Tffresh) 
+                     if (tr_brine) trcrn(i,j,nt_fbri,n) = c1
+
+                     do k=1,nilyr
+                        ! assume linear temp profile and compute enthalpy
+                        slope = Tf(i,j) - trcrn(i,j,nt_Tsfc,n)
+                        Ti = trcrn(i,j,nt_Tsfc,n) &
+                           + slope*(real(k,kind=dbl_kind)-p5) &
+                           / real(nilyr,kind=dbl_kind)
+                        ! sea ice enthalpy & salinity
+                        trcrn(i,j,nt_qice+k-1,n) = -2.0e8
+                        trcrn(i,j,nt_sice+k-1,n) = c5
+                     enddo
+                     ! snow enthalpy
+                     do k=1,nslyr
+                        trcrn(i,j,nt_qsno+k-1,n) = -1.5e8
+                     enddo
+                  enddo
+               endif
             endif
          enddo
          enddo
