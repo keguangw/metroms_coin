@@ -41,7 +41,8 @@
          da_insert        ! perfect nudging
 
       integer (kind=int_kind), public :: &
-         corr_bias        ! choose bias correction
+         corr_bias,     & ! choose bias correction cases
+         hnew		  ! choose new observed ice cases
 
       character (char_len), public :: &
          da_method        ! data assimilation method
@@ -396,7 +397,13 @@ subroutine da_coin    (nx_block,            ny_block,      &
                enddo
             else
                if ((weight > c0) .and. (aobs > p1)) then
-                  hbar = p5
+                  select case (hnew)
+                     case (0)	! Wang et al. (2013)
+                       hbar = p5
+                     case (1)	! Fritzner et al. (2018)
+                       hbar = 0.02_dbl_kind * exp(2.8767*aobs)
+                     case (2)
+                  end select
                   do n = 1, ncat
                      if (hbar > hin_max(n-1) .and. hbar < hin_max(n)) then
                         aicen(i,j,n) = aobs
