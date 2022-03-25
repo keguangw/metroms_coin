@@ -27,4 +27,6 @@ Fritzner, S. et al. (2018): Comparison between a multi-variate nudging method
 
 Please consult the README-file in the apps-directory for compiling options
 
+For citing the code, see [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6384271.svg)](https://doi.org/10.5281/zenodo.6384271)
+
 
