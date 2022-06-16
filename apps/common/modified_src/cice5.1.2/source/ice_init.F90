@@ -385,8 +385,10 @@
                read(nu_nml, nml=forcing_nml,iostat=nml_error)
                if (nml_error /= 0) exit
                write(ice_stdout,*) 'Reading da_nml'
-               read(nu_nml, nml=da_nml,iostat=nml_error)
-               if (nml_error /= 0) exit
+               if (da_ice) then
+                  read(nu_nml, nml=da_nml,iostat=nml_error)
+                  if (nml_error /= 0) exit
+               endif
          end do
          if (nml_error == 0) close(nu_nml)
       endif
